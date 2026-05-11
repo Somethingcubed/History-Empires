@@ -40,6 +40,20 @@ From this directory run `python3 -m http.server 8787`, open `http://127.0.0.1:87
 
 Geographic world map is **not** implemented; “region” here groups rows on the timeline, not map territory.
 
+## GitHub (maintainer)
+
+This repo is set up so you can push from your Mac:
+
+```bash
+cd "/Users/oscar/Desktop/Projects/Politics Project/empire-timeline"
+git status
+git push -u origin main
+```
+
+**First-time push:** GitHub no longer accepts account passwords for Git over HTTPS. Use a **Personal Access Token** (fine-grained or classic) as the password when Terminal asks: [GitHub → Settings → Developer settings → Personal access tokens](https://github.com/settings/tokens). Username is your GitHub handle (`photoself-crypto`).
+
+**Publish the site free (GitHub Pages):** Repo → **Settings** → **Pages** → Build: **Deploy from a branch** → Branch **main**, folder **/ (root)** → Save. After a minute, the site is at `https://photoself-crypto.github.io/History-Empires/` (GitHub shows the exact URL on the Pages settings page).
+
 ## Licenses
 
 See `THIRD_PARTY_NOTICES.md`.

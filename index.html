@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Empire History Timeline</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&amp;family=Inter:wght@400;500;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div id="app-shell">
+      <header class="app-toolbar" aria-label="Application controls">
+        <div class="app-brand">Empire History Timeline</div>
+        <label>Search<input id="filter-q" type="search" placeholder="Roman, Abbasid …" autocomplete="off" /></label>
+        <label>Region<select id="filter-region"><option value="">All regions</option></select></label>
+        <label>Era<select id="filter-era"><option value="">All eras</option></select></label>
+        <label>Faith<select id="filter-religion"><option value="">All religions</option></select></label>
+        <button type="button" id="btn-reset-filters" title="Clear search and dropdown filters">Reset filters</button>
+        <span id="filter-status" class="filter-status" role="status" aria-live="polite"></span>
+        <div class="toolbar-spacer" aria-hidden="true"></div>
+        <button type="button" id="btn-zoom-fit">Fit All</button>
+        <button type="button" id="btn-zoom-ancient">Ancient</button>
+        <button type="button" id="btn-zoom-medieval">Medieval</button>
+        <button type="button" id="btn-zoom-modern">Modern</button>
+        <fieldset class="layer-toggles" aria-label="Layer visibility">
+          <legend>Layers</legend>
+          <label><input type="checkbox" id="layer-bars" checked />Bars</label>
+          <label><input type="checkbox" id="layer-regions" checked />Bands</label>
+          <label><input type="checkbox" id="layer-regions-labels" checked />Region tags</label>
+          <label><input type="checkbox" id="layer-grid" checked />Grid</label>
+          <label><input type="checkbox" id="layer-labels" checked />Names</label>
+        </fieldset>
+      </header>
+      <main class="main-stage">
+        <div class="timeline-column">
+          <div id="timeline-wrap">
+            <p id="data-load-msg" class="data-load-msg" role="status">Loading empire data…</p>
+            <div
+              id="timeline-chart"
+              aria-label="Interactive timeline: drag horizontally to pan, scroll or pinch to zoom"
+            ></div>
+            <div id="timeline-overview" aria-label="Whole-period overview"></div>
+          </div>
+          <section class="region-legend-container" aria-label="Region legend">
+            <p class="sr-screen">Mute or highlight regions:</p>
+            <div id="region-legend" class="region-legend"></div>
+          </section>
+        </div>
+        <aside class="detail-panel-wrap" id="detail-root" role="region" aria-label="Empire details" data-open="false"></aside>
+      </main>
+    </div>
+
+    <div id="migration-overlay">
+      <canvas aria-hidden="true"></canvas>
+      <div class="migration-skip-wrap">
+        <button type="button" id="migration-skip-btn">Skip intro</button>
+      </div>
+      <div class="migration-caption">Outbound pathways into recorded history (~30 simulated seconds).</div>
+    </div>
+
+    <script src="vendor/d3.v7.min.js"></script>
+    <script src="js/timeline.js"></script>
+    <script src="js/detail-panel.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/migration.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1110 @@
+---
+description: Git 操作指令集 — 用自然语言完成 clone/commit/push 等所有 Git 操作
+alwaysApply: true
+---
+
+# AI-Driven Git 操作指令集
+
+> 让 Cursor、Codex、Copilot、CodeBuddy 等 AI 编程 IDE 通过自然语言对话完成所有 Git 操作。
+
+---
+
+## 目录
+
+- [0. 零基础上手指南](#0-零基础上手指南)
+  - [0.1 用一句话理解 Git](#01-用一句话理解-git)
+  - [0.2 五个核心概念](#02-五个核心概念)
+  - [0.3 一张图看懂关系](#03-一张图看懂关系)
+  - [0.4 三句话搞定回滚](#04-三句话搞定回滚)
+  - [0.5 遇到冲突怎么办](#05-遇到冲突怎么办)
+- [1. 设计理念](#1-设计理念)
+- [2. 如何使用](#2-如何使用)
+- [3. 仓库初始化与克隆](#3-仓库初始化与克隆)
+  - [3.3 SSH 密钥配置](#33-ssh-密钥配置github--gitlab)
+  - [3.4 本地项目关联 GitHub](#34-本地项目关联-github-远程仓库)
+  - [3.5 本地项目关联 GitLab](#35-本地项目关联-gitlab-远程仓库)
+  - [3.6 初始化常见问题](#36-初始化常见问题排查)
+- [4. 暂存与提交](#4-暂存与提交)
+- [5. 分支管理](#5-分支管理)
+- [6. 远程同步](#6-远程同步)
+- [7. 历史与差异](#7-历史与差异)
+- [8. 撤销与回退](#8-撤销与回退)
+- [9. 暂存与标签](#9-暂存与标签)
+- [10. 合并与变基](#10-合并与变基)
+- [11. 高级操作](#11-高级操作)
+- [12. 安全规则](#12-安全规则)
+- [13. 工作流模板](#13-工作流模板)
+  - [13.5 本地项目首次上传](#135-本地项目首次上传到-github--gitlab)
+
+---
+
+## 0. 零基础上手指南
+
+> 如果你从未用过 Git，5 分钟看完这一章就够了。会用的人可以直接跳转到 [第 1 章](#1-设计理念)。
+
+### 0.1 用一句话理解 Git
+
+**Git 就是给代码文件夹装了一台"时光机"。** 每做一次「提交」，就拍一张文件夹的快照。任何时候你都可以回到过去的任意一张快照。
+
+```
+你的文件夹 → [快照1] → [快照2] → [快照3] → ... 现在
+              ↑ 随时可以跳回来
+```
+
+### 0.2 五个核心概念
+
+#### 1. 仓库（Repository / Repo）
+你的代码文件夹 + 隐藏的 `.git` 目录。`.git` 里存着所有的快照和历史。
+
+```
+项目文件夹/          ← 你看到的
+├── src/
+├── package.json
+└── .git/           ← 隐藏的时光机（Git 的核心）
+    └── 所有的快照和历史都在这里
+```
+
+> **类比：** 仓库 = 一本书。当前工作区 = 你正在写的那一页。
+
+#### 2. 提交（Commit）
+给当前文件拍一张快照，并附上一句说明。每个提交都有唯一编号。
+
+```
+commit a1b2c3: "修复了登录页面的 bug"
+commit d4e5f6: "增加了注册功能"
+commit g7h8i9: "初始化项目"
+```
+
+> **类比：** 提交 = 游戏的存档点。玩到哪存到哪，出问题读档重来。
+
+#### 3. 分支（Branch）
+一条独立的工作线。你可以从主线上分叉出去做新功能，不影响主线。
+
+```
+main  ──●────●────●────●──   ← 稳定的主线
+              \
+feature ───────●────●────●   ← 你正在开发的新功能（互不干扰）
+```
+
+> **类比：** 分支 = 打游戏时的"另存为"。主线存档不动，你在副本里随便试验，满意了再合并回主线。
+
+#### 4. 暂存区（Stage / Index）
+提交的"购物车"。你先把要提交的文件放进去，确认无误后一次性提交。
+
+```
+工作区（你改了文件）
+    ↓ git add（加入购物车）
+暂存区（准备提交的文件）
+    ↓ git commit（结账）
+历史记录（生成一张新快照）
+```
+
+> **类比：** 暂存区 = 淘宝购物车。不是看到什么买什么，而是先加购，确认后一起结账。
+
+#### 5. 远程仓库（Remote）
+存在服务器上（如 GitHub、GitLab）的仓库副本，用于团队协作。
+
+```
+你的电脑（本地仓库）  ←  git pull / git push  →  服务器（远程仓库）
+```
+
+> **类比：** 远程仓库 = 百度网盘。本地写完 push 上传，别人 pull 下载，大家保持同步。
+
+### 0.3 一张图看懂关系
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        你的电脑                              │
+│                                                             │
+│  工作区              暂存区             本地仓库              │
+│  ┌──────┐   add    ┌──────┐  commit   ┌──────┐   push     ┌──────┐
+│  │ 文件 │ ──────→  │ 购物车│ ───────→ │ 快照 │ ──────→   │GitHub│
+│  │ 改动 │          │      │           │ 历史 │  ←──────   │服务器│
+│  └──────┘          └──────┘           └──────┘    pull    └──────┘
+│                                           │
+│                                      checkout / switch
+│                                      （切换分支/版本）
+│                                           ↓
+│                                    你的工作区会变成
+│                                    对应版本的样貌
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 0.4 三句话搞定回滚
+
+> 这是最容易踩坑的地方，认真看。
+
+| 你要做的事 | 一句话口诀 | 安全吗 |
+|-----------|-----------|--------|
+| 放弃**某个文件**的改动（回到上次提交的状态） | "撤销这个文件的改动，没保存过的不行" | ✅ 安全 |
+| 撤销**最近的提交**，改动留回工作区 | "我刚提交错了，撤回来继续改" | ✅ 安全（没 push 过） |
+| 撤销**最近提交**，改动也丢掉 | "提交的东西我不要了，全删" | ⚠️ 危险 |
+| 撤销**已经推送到远程**的提交 | "别撤销了，用 revert 新建一个反向提交" | ✅ 安全的做法 |
+
+**黄金法则：**
+
+```
+提交还没 push？  → 随便撤销，工作区还能恢复
+提交已经 push 了？ → 千万不要 reset，用 revert（生成一个新提交来抵消）
+                    否则同事的仓库会乱套
+```
+
+> **一句话记住：** push 之前随便玩，push 之后要小心。
+
+### 0.5 遇到冲突怎么办
+
+**冲突是什么？** 两个人同时改了同一个文件的同一行，Git 不知道该听谁的。
+
+```
+<<<<<<< HEAD
+你的改动
+=======
+同事的改动
+>>>>>>> feature/xxx
+```
+
+**不要慌，三步解决：**
+
+```
+1. AI 会告诉你哪些文件冲突了
+2. 打开那些文件，删掉 <<< === >>> 标记
+   → 选你的，选他的，或者重新写
+3. 告诉 AI："我改好了，帮我继续"
+   → AI 执行 git add + git commit 完成合并
+```
+
+> **心态最重要：** 冲突不是 bug，是正常现象。说明你们两个都在认真工作。
+
+---
+
+## 1. 设计理念
+
+### 核心原则
+
+| 原则 | 说明 |
+|------|------|
+| **自然语言驱动** | 用户像和人说话一样描述意图，AI 映射为 Git 命令 |
+| **安全第一** | 破坏性操作前自动确认，禁止跳过 hooks |
+| **原子化操作** | 每个操作独立可追踪，出错可回滚 |
+| **智能上下文** | 自动感知当前分支、工作区状态，减少用户输入 |
+| **中文友好** | 支持中英文混合的自然语言指令 |
+
+### AI 的执行流程
+
+```
+用户自然语言 → 意图解析 → 状态感知 → 命令构造 → 安全校验 → 执行 → 结果呈现
+```
+
+---
+
+## 2. 如何使用
+
+### 方式一：直接对话
+
+直接将以下内容作为 System Prompt 或 Rules 植入 AI IDE：
+
+```
+你是一个精通 Git 的 AI 助手，能够将用户的自然语言指令转换为 Git 命令并执行。
+在执行任何 Git 操作前，先执行 git status 获取当前状态。
+破坏性操作（reset --hard、push --force、删除分支等）必须先向用户确认。
+不要跳过 Git hooks（--no-verify、--no-gpg-sign）。
+命令执行后，用简洁的中文解释做了什么以及结果。
+```
+
+### 方式二：作为项目 Rules 引入
+
+将此文件放入项目根目录的 `.cursor/rules/` 或 `.github/copilot-instructions.md`：
+
+```bash
+# Cursor
+cp ai-git-operations.md .cursor/rules/git-operations.md
+
+# GitHub Copilot
+cp ai-git-operations.md .github/copilot-instructions.md
+
+# CodeBuddy
+# 将内容加入项目的 .workbuddy/rules/ 目录
+```
+
+### 方式三：直接粘贴对话
+
+每次需要时，将对应章节的指令模板直接粘贴给 AI。
+
+---
+
+## 3. 仓库初始化与克隆
+
+### 3.1 初始化仓库
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "初始化一个 Git 仓库" | `git init` |
+| "在这里创建一个 Git 仓库，分支名叫 main" | `git init -b main` |
+| "init 一个仓库，初始分支用 develop" | `git init -b develop` |
+
+**AI 执行模板：**
+```
+1. 检查当前目录是否已是 Git 仓库（git rev-parse --git-dir）
+2. 如果不是，执行 git init [-b <分支名>]
+3. 告知用户仓库已创建，当前分支名
+```
+
+### 3.2 克隆仓库
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "克隆 https://github.com/user/repo.git" | `git clone <url>` |
+| "把 xxx 仓库 clone 下来，分支用 dev" | `git clone -b dev <url>` |
+| "浅克隆那个仓库，只要最近 3 条记录" | `git clone --depth 3 <url>` |
+| "把仓库克隆到 ./my-project 目录" | `git clone <url> ./my-project` |
+
+**AI 执行模板：**
+```
+1. 解析 URL 和可选参数（分支、深度、目录）
+2. git clone [参数] <url> [目录]
+3. 克隆完成后 cd 到仓库目录
+4. 告知用户克隆完成，显示当前分支和最新 commit
+```
+
+### 3.3 SSH 密钥配置（GitHub / GitLab）
+
+> **什么时候需要？** 第一次把电脑和 GitHub / GitLab 连起来时。配好一次，以后 clone / push 都不用再输密码。
+
+#### 一句话理解
+
+```
+你的电脑（私钥）  ←→  GitHub/GitLab（公钥）  =  安全通行证
+```
+
+#### 用户怎么说，AI 怎么做
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "帮我配置 GitHub SSH" | 按下方「AI 执行模板」完整走一遍 |
+| "帮我配置 GitLab SSH" | 同上，添加公钥时引导到 GitLab |
+| "看看我有没有 SSH 密钥" | `ls -la ~/.ssh/id_*.pub` |
+| "测试 GitHub 能不能连上" | `ssh -T git@github.com` |
+| "测试 GitLab 能不能连上" | `ssh -T git@gitlab.com` |
+| "把公钥复制出来我要粘贴" | `cat ~/.ssh/id_ed25519.pub` 或 `cat ~/.ssh/id_rsa.pub` |
+
+**AI 执行模板：**
+```
+1. 检查是否已有公钥
+   ls -la ~/.ssh/id_ed25519.pub ~/.ssh/id_rsa.pub 2>/dev/null
+
+2. 如果没有，生成新密钥（优先 ed25519）
+   ssh-keygen -t ed25519 -C "用户邮箱" -f ~/.ssh/id_ed25519 -N ""
+   → 若系统不支持 ed25519，改用：ssh-keygen -t rsa -b 4096 -C "用户邮箱"
+
+3. 启动 ssh-agent 并添加私钥（macOS / Linux）
+   eval "$(ssh-agent -s)"
+   ssh-add ~/.ssh/id_ed25519   # 或 ~/.ssh/id_rsa
+
+4. 显示公钥，告知用户复制整行（从 ssh- 开头到邮箱结尾）
+   cat ~/.ssh/id_ed25519.pub
+
+5. 引导用户把公钥添加到平台（见下方「平台添加公钥步骤」）
+
+6. 测试连接
+   GitHub: ssh -T git@github.com
+   GitLab: ssh -T git@gitlab.com
+   → 成功应看到 "Hi username!" 或 "Welcome to GitLab"
+
+7. 若连接失败，跳转到 [3.6 初始化常见问题排查](#36-初始化常见问题排查)
+```
+
+#### 平台添加公钥步骤（给用户看的）
+
+**GitHub：**
+```
+1. 打开 https://github.com/settings/keys
+2. 点 "New SSH key"
+3. Title 随便填（如：我的 MacBook）
+4. Key 粘贴 AI 给你的公钥整行
+5. 点 "Add SSH key"
+```
+
+**GitLab：**
+```
+1. 打开 https://gitlab.com/-/user_settings/ssh_keys
+   （自建 GitLab 则是：你的域名/-/profile/keys）
+2. 粘贴公钥到 Key 输入框
+3. Title 随便填
+4. 点 "Add key"
+```
+
+#### SSH 地址 vs HTTPS 地址
+
+| 平台 | SSH 地址（推荐） | HTTPS 地址 |
+|------|-----------------|------------|
+| GitHub | `git@github.com:用户名/仓库名.git` | `https://github.com/用户名/仓库名.git` |
+| GitLab | `git@gitlab.com:用户名/仓库名.git` | `https://gitlab.com/用户名/仓库名.git` |
+
+> **给 AI 的规则：** 用户未配置 SSH 且 clone/push 失败时，优先引导配置 SSH；若用户明确要用 HTTPS，则引导使用 Personal Access Token 作为密码。
+
+---
+
+### 3.4 本地项目关联 GitHub 远程仓库
+
+> **典型场景：** 你已经在电脑上有一个项目文件夹，想在 GitHub 上建一个仓库，把代码传上去。这是非开发同学最常卡住的地方。
+
+#### 整体流程（一张图）
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│ 1. GitHub 网页│     │ 2. 本地初始化 │     │ 3. 关联远程   │     │ 4. 提交并推送 │
+│  创建空仓库   │ ──→ │  git init    │ ──→ │ remote add   │ ──→ │ push         │
+└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
+```
+
+#### 第一步：在 GitHub 网页创建空仓库（用户手动）
+
+```
+1. 登录 https://github.com
+2. 右上角 "+" → "New repository"
+3. 填写仓库名（如 my-project）
+4. ⚠️ 不要勾选 "Add a README"（本地已有代码时）
+5. 点 "Create repository"
+6. 复制页面上的 SSH 地址，形如：
+   git@github.com:你的用户名/my-project.git
+```
+
+> **告诉 AI 怎么说：** 「我在 GitHub 创建了仓库 git@github.com:xxx/yyy.git，帮我把当前项目传上去」
+
+#### 用户怎么说，AI 怎么做
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "把这个项目传到 GitHub" | 按下方完整流程执行 |
+| "帮我把当前文件夹关联到 GitHub 仓库 xxx" | 检查状态 → init → remote → commit → push |
+| "我在 GitHub 建好了空仓库，地址是 git@github.com:a/b.git" | 直接关联并推送 |
+| "这个项目还没有 Git，帮我初始化并推到 GitHub" | git init → 配置 user → add → commit → remote → push |
+| "远程地址写错了，改成 xxx" | `git remote set-url origin <新地址>` |
+| "看看关联了哪个远程仓库" | `git remote -v` |
+
+**AI 执行模板（本地项目 → GitHub）：**
+```
+1. 确认当前目录是项目根目录，列出主要文件让用户确认
+
+2. 检查是否已是 Git 仓库
+   git rev-parse --git-dir 2>/dev/null
+   → 不是仓库：git init -b main（或 master，与 GitHub 默认分支一致）
+
+3. 检查 git 用户名和邮箱（没有则询问用户后设置）
+   git config user.name
+   git config user.email
+   → 缺失时：git config user.name "名字" && git config user.email "邮箱"
+
+4. 检查 SSH 是否可用
+   ssh -T git@github.com
+   → 失败则引导 [3.3 SSH 密钥配置](#33-ssh-密钥配置github--gitlab)
+
+5. 检查是否已有 .gitignore
+   → 没有则根据项目类型创建（如 Python: __pycache__/, .env；Node: node_modules/）
+   → 确保不提交 .env、密钥、credentials 等敏感文件
+
+6. 检查远程仓库
+   git remote -v
+   → 没有 origin：git remote add origin <SSH地址>
+   → 已有但地址不对：git remote set-url origin <SSH地址>
+
+7. 暂存并提交（如有未提交改动）
+   git status
+   git add -A
+   git commit -m "init: 初始化项目"   # 或根据改动生成合适的 message
+
+8. 推送到远程
+   git branch --show-current          # 确认当前分支名
+   git push -u origin <当前分支名>     # 首次推送
+
+9. 告知用户：推送成功，给出 GitHub 仓库网页链接
+   https://github.com/<用户名>/<仓库名>
+```
+
+---
+
+### 3.5 本地项目关联 GitLab 远程仓库
+
+> 流程与 GitHub 几乎相同，只是网页地址和 SSH 域名不同。
+
+#### 第一步：在 GitLab 网页创建空仓库（用户手动）
+
+```
+1. 登录 https://gitlab.com（或你的公司 GitLab 地址）
+2. 左上角 "+" → "New project/repository" → "Create blank project"
+3. 填写 Project name
+4. ⚠️ 取消勾选 "Initialize repository with a README"
+5. 点 "Create project"
+6. 复制 SSH 地址，形如：
+   git@gitlab.com:你的用户名/my-project.git
+   （自建 GitLab 则是 git@gitlab.公司域名:组名/项目名.git）
+```
+
+#### 用户怎么说，AI 怎么做
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "把这个项目传到 GitLab" | 同 3.4 流程，SSH 测试改为 git@gitlab.com |
+| "关联 GitLab 仓库 git@gitlab.com:a/b.git" | remote add + push |
+| "公司 GitLab 地址是 gitlab.company.com" | 使用 `git@gitlab.company.com:...` 格式 |
+
+**AI 执行模板（本地项目 → GitLab）：**
+```
+与 [3.4](#34-本地项目关联-github-远程仓库) 相同，差异点：
+1. SSH 测试：ssh -T git@gitlab.com（自建则用对应域名）
+2. 远程地址格式：git@gitlab.com:用户名/仓库名.git
+3. 成功后给出链接：https://gitlab.com/<用户名>/<仓库名>
+```
+
+#### GitHub vs GitLab 快速对照
+
+| 步骤 | GitHub | GitLab |
+|------|--------|--------|
+| 创建空仓库 | github.com → New repository | gitlab.com → New project |
+| SSH 测试 | `ssh -T git@github.com` | `ssh -T git@gitlab.com` |
+| SSH 地址 | `git@github.com:user/repo.git` | `git@gitlab.com:user/repo.git` |
+| 添加 SSH 公钥 | Settings → SSH and GPG keys | Preferences → SSH Keys |
+| 默认分支 | 通常是 `main` | 通常是 `main` |
+
+---
+
+### 3.6 初始化常见问题排查
+
+> AI 遇到以下报错时，按对应方案处理，并用 plain language 向用户解释。
+
+| 报错信息 | 原因 | AI 处理方式 |
+|---------|------|------------|
+| `Permission denied (publickey)` | SSH 未配置或未添加到平台 | 引导 [3.3](#33-ssh-密钥配置github--gitlab)，检查 `ssh-add -l` |
+| `Could not read Username for 'https://...'` | HTTPS 方式需要 Token | 改用 SSH 地址，或引导生成 Personal Access Token |
+| `remote origin already exists` | 已有关联的远程 | `git remote -v` 查看，需要改地址用 `set-url` |
+| `failed to push some refs` / `rejected` | 远程有本地没有的提交 | 空仓库不应出现；若有 README 冲突：`git pull origin main --rebase` 后再 push |
+| `src refspec main does not match any` | 还没有任何 commit | 先 `git add -A && git commit -m "init"` 再 push |
+| `Connection closed by ... port 22` | 网络/代理拦截 SSH | 尝试 SSH 443 端口，或改用 HTTPS + Token |
+| `Repository not found` | 仓库不存在或无权限 | 确认 URL、账号权限、仓库是否私有 |
+| `fatal: not a git repository` | 当前目录不是 Git 仓库 | `git init -b main` |
+
+**SSH 22 端口被拦截时的备用方案（macOS）：**
+```
+# 在 ~/.ssh/config 中添加（需用户确认后操作）：
+Host github.com
+  Hostname ssh.github.com
+  Port 443
+  User git
+
+Host gitlab.com
+  Hostname altssh.gitlab.com
+  Port 443
+  User git
+```
+
+**HTTPS + Token 备用方案（SSH 实在不通时）：**
+```
+1. GitHub: Settings → Developer settings → Personal access tokens → 生成 Token（勾选 repo）
+2. GitLab: Preferences → Access Tokens → 生成 Token（勾选 write_repository）
+3. 远程地址改为 HTTPS：
+   git remote set-url origin https://github.com/用户名/仓库名.git
+4. push 时：用户名填平台用户名，密码填 Token（不是登录密码）
+```
+
+---
+
+## 4. 暂存与提交
+
+### 4.1 查看状态
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "看看现在什么状态" | `git status` |
+| "有哪些文件改了" | `git status --short` |
+| "看看暂存区有什么" | `git diff --cached --stat` |
+| "查看简短的改动摘要" | `git status -s` |
+
+### 4.2 暂存文件
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "把所有改动加到暂存区" | `git add -A` 或 `git add .` |
+| "把 src/ 目录加进去" | `git add src/` |
+| "把 app.ts 和 utils.ts 暂存" | `git add app.ts utils.ts` |
+| "交互式暂存" | `git add -p`（需用户交互，告知用户手动执行） |
+| "把所有 .ts 文件暂存" | `git add "*.ts"` |
+| "暂存除了 node_modules 之外的所有" | `git add .` + 确保 .gitignore 包含 node_modules |
+
+### 4.3 提交
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "提交，消息是 xxx" | `git commit -m "xxx"` |
+| "把当前改动提交，写个合适的 message" | AI 先 `git diff --staged` 分析改动，生成 commit message，再 `git commit -m "..."` |
+| "提交所有改动，不用 add" | `git commit -am "xxx"`（仅对已跟踪文件） |
+| "修改上一次提交的消息" | `git commit --amend -m "新消息"` |
+| "把新改动追加到上一次提交" | `git add ...` + `git commit --amend --no-edit` |
+
+**AI 自动生成 Commit Message 模板：**
+
+当用户说"帮我写个 commit message"时，AI 应该：
+
+```
+1. 执行 git diff --staged 获取暂存区改动
+2. 如果没有暂存，执行 git diff 获取工作区改动
+3. 分析改动内容，按以下格式生成：
+   <type>(<scope>): <简短描述>
+   
+   类型: feat / fix / refactor / docs / style / test / chore / perf
+   范围: 改动的模块或文件
+   描述: 50 字以内，中文或英文
+4. 提供给用户确认后执行
+```
+
+### 4.4 取消暂存
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "把 app.ts 从暂存区撤下来" | `git restore --staged app.ts` |
+| "取消所有暂存" | `git restore --staged .` |
+
+---
+
+## 5. 分支管理
+
+### 5.1 查看分支
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "看看有哪些分支" | `git branch -a` |
+| "列出本地分支" | `git branch` |
+| "列出远程分支" | `git branch -r` |
+| "哪些分支已经合并到 main 了" | `git branch --merged main` |
+| "哪些分支还没合并" | `git branch --no-merged main` |
+
+### 5.2 创建分支
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "创建一个 feature/login 分支" | `git checkout -b feature/login` |
+| "从 develop 拉一个 hotfix 分支" | `git checkout -b hotfix/xxx develop` |
+| "建一个分支并推送" | `git checkout -b <name>` + `git push -u origin <name>` |
+| "基于某个 tag 创建分支" | `git checkout -b <branch> <tag>` |
+
+**AI 执行模板：**
+```
+1. 确认当前没有未提交的改动（或提示用户先处理）
+2. 如果有基准分支/tag，先 fetch 确保最新
+3. git checkout -b <新分支> <基准>
+4. 告知用户分支已创建并已切换
+```
+
+### 5.3 切换分支
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "切到 main 分支" | `git checkout main` 或 `git switch main` |
+| "切回上一个分支" | `git checkout -` 或 `git switch -` |
+| "切换到 develop，如果本地没有就从远程拉" | `git checkout develop` || `git checkout -b develop origin/develop` |
+
+**AI 执行模板：**
+```
+1. 检查当前是否有未提交的改动
+2. 如果有改动，询问是否 stash 或 commit
+3. 尝试 git checkout <分支>
+4. 如果本地没有，尝试从远程拉取并创建跟踪分支
+```
+
+### 5.4 删除分支
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "删除 feature/old 分支" | ⚠️ 先检查是否已合并，再 `git branch -d feature/old` |
+| "强制删除那个分支" | ⚠️ 确认后 `git branch -D feature/old` |
+| "删除远程的 xxx 分支" | ⚠️ 确认后 `git push origin --delete xxx` |
+
+**安全规则：**
+```
+删除分支前必须：
+1. 确认当前不在该分支上
+2. 检查该分支是否已合并到默认分支
+3. 如果未合并，警告用户数据将丢失
+4. 用户明确确认后才执行
+```
+
+### 5.5 分支重命名
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "把当前分支改名为 xxx" | `git branch -m xxx` |
+| "把 old-name 分支改名为 new-name" | `git branch -m old-name new-name` |
+
+---
+
+## 6. 远程同步
+
+### 6.1 远程仓库管理
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "看看远程仓库" | `git remote -v` |
+| "添加一个远程仓库叫 upstream" | `git remote add upstream <url>` |
+| "改一下 origin 的地址" | `git remote set-url origin <new-url>` |
+| "删掉 upstream 远程" | ⚠️ 确认后 `git remote remove upstream` |
+
+### 6.2 拉取与获取
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "拉一下最新代码" | `git pull` |
+| "从远程 fetch，但不合并" | `git fetch` |
+| "fetch 所有远程" | `git fetch --all` |
+| "拉取并变基" | `git pull --rebase` |
+| "从 upstream 拉 main 分支" | `git pull upstream main` |
+| "只 fetch，顺便清理已删除的远程分支" | `git fetch --prune` |
+
+### 6.3 推送
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "推上去" | 如果是新分支：`git push -u origin <当前分支>`；否则：`git push` |
+| "强制推送" | ⚠️⚠️ 严重警告后确认，`git push --force-with-lease`（优先） |
+| "推送所有分支" | `git push --all origin` |
+| "推送标签" | `git push --tags` |
+
+**强制推送安全规则：**
+```
+git push --force 是危险操作，执行前必须：
+1. 明确告知用户风险（覆盖远程历史，影响协作者）
+2. 优先推荐 git push --force-with-lease（更安全）
+3. 用户明确输入"确认"后才执行
+4. 执行后告知用户无法撤销
+```
+
+---
+
+## 7. 历史与差异
+
+### 7.1 查看日志
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "看看提交历史" | `git log --oneline -20` |
+| "看最近 5 条完整信息" | `git log -5` |
+| "图形化显示分支历史" | `git log --oneline --graph --all -30` |
+| "看某个文件的提交历史" | `git log --follow -p <文件路径>` |
+| "看某人的提交" | `git log --author="名字" --oneline` |
+| "看某个时间段的提交" | `git log --since="2024-01-01" --until="2024-12-31"` |
+| "看包含某个关键词的提交" | `git log --grep="关键词" --oneline` |
+| "一行看一个提交，带分支图" | `git log --oneline --graph --decorate --all` |
+
+### 7.2 查看差异
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "看看改了啥" | `git diff`（工作区 vs 暂存区） |
+| "看暂存区的改动" | `git diff --cached` |
+| "看某个文件的改动" | `git diff <文件>` |
+| "对比两个分支的差异" | `git diff branch1..branch2` |
+| "看某次提交改了什么" | `git show <commit-hash>` |
+| "看文件在两次提交间的差异" | `git diff <hash1> <hash2> -- <文件>` |
+| "只看改动的文件名" | `git diff --name-only` |
+| "看统计信息" | `git diff --stat` |
+
+### 7.3 查看文件历史
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "谁最后改的这行代码" | `git blame <文件>` |
+| "看文件的每一行是谁改的" | `git blame <文件> -L <起始>,<结束>` |
+| "这个文件什么时候被删除的" | `git log --diff-filter=D -- <文件>` |
+
+---
+
+## 8. 撤销与回退
+
+### 8.1 撤销工作区改动
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "放弃 app.ts 的改动" | ⚠️ 确认后 `git restore app.ts` 或 `git checkout -- app.ts` |
+| "放弃所有改动" | ⚠️ 确认后 `git restore .` |
+| "把所有未跟踪文件删掉" | ⚠️ 确认后 `git clean -fd`（先 `git clean -n` 预览） |
+
+### 8.2 撤销提交
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "撤销最近一次提交，保留改动" | `git reset --soft HEAD~1` |
+| "撤销最近一次提交，保留文件改动但取消暂存" | `git reset --mixed HEAD~1` 或 `git reset HEAD~1` |
+| "撤销最近一次提交，完全丢弃改动" | ⚠️⚠️ 严重警告，`git reset --hard HEAD~1` |
+| "回退到某个提交，保留后续改动" | `git reset --soft <hash>` |
+| "创建一个新提交来撤销之前的提交" | `git revert <hash>`（推荐用于已推送的提交） |
+| "撤销最近 3 个提交" | ⚠️ `git reset --soft HEAD~3`（保留改动）|
+
+**撤销操作决策树（AI 必须遵循）：**
+
+```
+是否已推送到远程？
+├── 是 → 使用 git revert（安全，不影响协作者）
+└── 否 → 使用 git reset（本地操作）
+    ├── 想保留改动？ → --soft
+    ├── 想保留文件改动但取消暂存？ → --mixed（默认）
+    └── 完全丢弃？ → --hard（⚠️ 严重警告后确认）
+```
+
+### 8.3 Cherry-pick（挑拣提交）
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "把 abc123 那个提交挑过来" | `git cherry-pick abc123` |
+| "把 abc 到 def 这几个提交挑过来" | `git cherry-pick abc123..def456` |
+| "挑过来但不自动提交" | `git cherry-pick -n <hash>` |
+
+---
+
+## 9. 暂存与标签
+
+### 9.1 Stash（暂存工作区）
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "先把当前改动存一下" | `git stash` |
+| "暂存并加个描述" | `git stash push -m "描述"` |
+| "把未跟踪的文件也暂存" | `git stash -u` |
+| "看看暂存列表" | `git stash list` |
+| "恢复最近的暂存" | `git stash pop` |
+| "恢复但不删除暂存记录" | `git stash apply` |
+| "恢复指定的暂存" | `git stash pop stash@{n}` |
+| "删除最近一个暂存" | `git stash drop` |
+| "删除所有暂存" | ⚠️ `git stash clear` |
+| "把暂存的内容展开到新分支" | `git stash branch <新分支名>` |
+
+### 9.2 Tag（标签）
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "打个标签 v1.0.0" | `git tag v1.0.0` |
+| "打一个附注标签" | `git tag -a v1.0.0 -m "版本 1.0.0 发布"` |
+| "给之前的提交打标签" | `git tag -a v1.0.0 <hash> -m "..."` |
+| "看看有哪些标签" | `git tag -l` |
+| "推送标签到远程" | `git push origin v1.0.0` 或 `git push --tags` |
+| "删除本地标签" | `git tag -d v1.0.0` |
+| "删除远程标签" | ⚠️ `git push origin --delete v1.0.0` |
+
+---
+
+## 10. 合并与变基
+
+### 10.1 Merge（合并）
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "把 develop 合并到当前分支" | `git merge develop` |
+| "合并但不自动提交" | `git merge --no-commit <branch>` |
+| "合并时生成一个合并提交" | `git merge --no-ff <branch>` |
+| "取消正在进行的合并" | `git merge --abort` |
+
+**AI 冲突处理流程：**
+```
+1. 合并前先 fetch 确保最新
+2. 执行合并
+3. 如果出现冲突：
+   a. 列出冲突文件
+   b. 显示每个文件的冲突内容
+   c. 让用户选择处理方式（手动/接受一方/中止）
+   d. 解决后执行 git add + git commit
+4. 如果冲突太多，建议 git merge --abort
+```
+
+### 10.2 Rebase（变基）
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "把当前分支变基到 main" | `git rebase main` |
+| "变基到 develop" | `git rebase develop` |
+| "交互式变基最近 3 个提交" | `git rebase -i HEAD~3`（告知需在编辑器中操作） |
+| "取消变基" | `git rebase --abort` |
+| "继续变基" | `git rebase --continue` |
+| "跳过当前提交" | `git rebase --skip` |
+
+⚠️ **Rebase 警告：** 如果当前分支已推送到远程，变基后需要强制推送，这会影响协作者。AI 必须明确告知这一风险。
+
+---
+
+## 11. 高级操作
+
+### 11.1 二分查找（Bisect）
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "帮我找到引入 bug 的提交" | 启动 bisect 流程 |
+| "开始二分查找" | `git bisect start` |
+| "标记当前是坏的" | `git bisect bad` |
+| "标记 v1.0.0 是好的" | `git bisect good v1.0.0` |
+| "结束二分查找" | `git bisect reset` |
+
+### 11.2 子模块
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "添加子模块" | `git submodule add <url> <路径>` |
+| "初始化并更新子模块" | `git submodule update --init --recursive` |
+| "更新所有子模块" | `git submodule update --remote` |
+
+### 11.3 配置
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "设置用户名" | `git config user.name "名字"` |
+| "设置邮箱" | `git config user.email "邮箱"` |
+| "看当前配置" | `git config --list` |
+| "设置全局默认分支名" | `git config --global init.defaultBranch main` |
+
+### 11.4 忽略文件
+
+| 用户说 | AI 执行 |
+|--------|---------|
+| "忽略 node_modules" | 在 .gitignore 中添加 `node_modules/` |
+| "忽略 .env 文件" | 在 .gitignore 中添加 `.env` |
+| "看看哪些文件被忽略了" | `git status --ignored` |
+
+---
+
+## 12. 安全规则
+
+> AI 在对话中执行 Git 操作时必须遵守的安全底线。
+
+### 🚫 绝对禁止
+
+- `git push --force origin main`（或 `master`）——覆盖主分支
+- `git reset --hard` 未经用户确认
+- `git clean -fd` 未经用户确认
+- `git branch -D` 未经用户确认
+- 跳过 Git hooks（`--no-verify`、`--no-gpg-sign`）
+
+### ⚠️ 需要严重警告
+
+| 操作 | 风险 | 安全替代方案 |
+|------|------|-------------|
+| `git push --force` | 覆盖远程历史 | `git push --force-with-lease` |
+| `git reset --hard` | 永久丢失改动 | 先 `git stash` 备份 |
+| `git branch -D` | 删除未合并分支 | 先 `git branch -d` 检查 |
+| `git clean -fd` | 删除未跟踪文件 | 先 `git clean -n` 预览 |
+
+### ✅ AI 执行前的必要检查
+
+```
+每次操作前：
+1. 必须是 Git 仓库（git rev-parse --git-dir）
+2. 获取当前分支名（git branch --show-current）
+3. 检查工作区是否干净（git status --porcelain）
+4. 破坏性操作必须逐项列出影响范围
+5. 强制操作必须先警告，等用户确认
+```
+
+---
+
+## 13. 工作流模板
+
+### 13.1 日常开发流程
+
+**用户说：** "我要开始今天的工作了"
+
+**AI 执行：**
+```
+1. git fetch --all --prune     # 同步远程
+2. git status                   # 当前状态
+3. git checkout develop         # 切到开发分支
+4. git pull                     # 拉最新
+5. git checkout -b feature/xxx  # 创建功能分支
+→ 开始编码...
+→ "提交今天的改动"
+→ git add -A
+→ git commit -m "feat: xxx"
+→ "推送到远程"
+→ git push -u origin feature/xxx
+```
+
+### 13.2 代码审查前准备
+
+**用户说：** "准备提 PR"
+
+**AI 执行：**
+```
+1. git fetch origin
+2. git rebase origin/main          # 变基到最新 main
+3. git log origin/main..HEAD --oneline  # 查看自己的提交
+4. git diff origin/main --stat     # 查看改动统计
+5. git push --force-with-lease     # 推送（如果之前推送过）
+→ 告知用户改动摘要，建议 PR 标题和描述
+```
+
+### 13.3 发布流程
+
+**用户说：** "准备发布 v1.2.0"
+
+**AI 执行：**
+```
+1. git checkout develop
+2. git pull
+3. git checkout -b release/v1.2.0
+4. # 版本号更新等
+5. git commit -am "chore: bump version to 1.2.0"
+6. git checkout main
+7. git merge --no-ff release/v1.2.0
+8. git tag -a v1.2.0 -m "Release v1.2.0"
+9. git push origin main --tags
+10. git checkout develop
+11. git merge --no-ff release/v1.2.0
+12. git push origin develop
+13. git branch -d release/v1.2.0
+```
+
+### 13.4 紧急修复流程
+
+**用户说：** "线上有 bug，紧急修复"
+
+**AI 执行：**
+```
+1. git checkout main
+2. git pull
+3. git checkout -b hotfix/xxx
+4. # 修复 bug...
+5. git commit -am "fix: 紧急修复 xxx"
+6. git checkout main
+7. git merge --no-ff hotfix/xxx
+8. git tag -a v1.2.1 -m "Hotfix v1.2.1"
+9. git push origin main --tags
+10. git checkout develop
+11. git merge --no-ff hotfix/xxx  # 同步修复到开发分支
+12. git push origin develop
+13. git branch -d hotfix/xxx
+```
+
+### 13.5 本地项目首次上传到 GitHub / GitLab
+
+**用户说：** "我有一个项目文件夹，想传到 GitHub / GitLab"
+
+**AI 执行：**
+```
+1. 询问用户：
+   - 目标平台（GitHub 还是 GitLab）
+   - 是否已在网页创建好空仓库
+   - 仓库 SSH 地址（如 git@github.com:user/repo.git）
+   → 若还没创建，先给出网页操作步骤（见 3.4 / 3.5），等用户创建完再继续
+
+2. 检查 SSH：ssh -T git@github.com 或 git@gitlab.com
+   → 失败则先走 [3.3 SSH 配置](#33-ssh-密钥配置github--gitlab)
+
+3. 本地初始化（如需要）
+   git init -b main
+   git config user.name / user.email（缺失时询问用户）
+
+4. 检查 .gitignore，排除敏感文件和依赖目录
+
+5. 关联远程
+   git remote add origin <SSH地址>
+
+6. 首次提交并推送
+   git add -A
+   git commit -m "init: 初始化项目"
+   git push -u origin main
+
+7. 告知用户仓库网页链接，后续日常操作用「提交」「推送」「拉取」即可
+```
+
+**用户可能说的变体：**
+- "帮我把这个项目放到 GitHub 上"
+- "我在 GitLab 建了个空仓库，帮我对接上"
+- "这个项目还没用过 Git，帮我弄好传上去"
+
+---
+
+## 附录 A：自然语言触发词速查
+
+| 类别 | 中文触发词 | 英文触发词 |
+|------|-----------|-----------|
+| 初始化 | 初始化、创建仓库 | init, create repo |
+| 上传远程 | 传到 GitHub、传到 GitLab、关联远程、放到仓库里 | upload, connect remote |
+| SSH 配置 | 配置 SSH、生成密钥、公钥、连不上 GitHub | ssh key, setup ssh |
+| 克隆 | 克隆、下载仓库 | clone, download |
+| 暂存 | 暂存、add、加进去 | stage, add |
+| 提交 | 提交、commit | commit |
+| 推送 | 推送、push、推上去 | push |
+| 拉取 | 拉取、拉代码、更新 | pull, fetch, update |
+| 分支 | 分支、branch、切分支 | branch, checkout, switch |
+| 合并 | 合并、merge | merge |
+| 变基 | 变基、rebase | rebase |
+| 撤销 | 撤销、回退、还原、放弃 | undo, revert, reset, discard |
+| 暂存工作区 | 暂存、存一下、stash | stash |
+| 标签 | 标签、tag、版本号 | tag, version |
+| 差异 | 对比、差异、diff、看看改了啥 | diff, compare, changes |
+| 历史 | 历史、日志、commits | log, history |
+| 冲突 | 冲突、conflict | conflict |
+
+---
+
+## 附录 B：System Prompt 精简版
+
+> 将此段直接粘贴到 IDE 的 System Prompt 或 Rules 中：
+
+```markdown
+# Git Operations Protocol
+
+You are a Git expert. When the user describes a Git operation in natural language
+(Chinese or English), convert it into the appropriate Git commands and execute
+them following these rules:
+
+## Pre-execution Checklist
+1. Always run `git status` first to understand the current state
+2. If not in a Git repo, ask the user to initialize first
+3. Check if the working tree is clean before switching branches
+
+## Safety Rules (NEVER VIOLATE)
+- NEVER run `git push --force origin main` or `git push --force origin master`
+- NEVER run `git reset --hard` without explicit user confirmation
+- NEVER run `git clean -fd` without `git clean -n` preview first
+- NEVER use `--no-verify` or `--no-gpg-sign`
+- For any destructive operation: list affected files/commits, warn the user,
+  and wait for explicit "确认" before executing
+
+## Push Safety
+- Prefer `git push --force-with-lease` over `git push --force`
+- If a branch hasn't been pushed before, use `git push -u origin <branch>`
+
+## Commit Message Convention
+Generate commit messages in the format: `<type>(<scope>): <description>`
+Types: feat, fix, refactor, docs, style, test, chore, perf
+
+## Post-execution
+- Always report the result in concise Chinese
+- If there are conflicts, list the conflicting files and explain the situation
+```
+
+---
+
+## 附录 C：常见问题
+
+**Q: 完全不懂 Git 的人能用吗？**
+A: 可以。80% 的日常操作（提交、拉取、推送、切分支、回滚）直接说话就行。建议先花 5 分钟读 [第 0 章](#0-零基础上手指南) 理解核心概念，避免踩坑。
+
+**Q: AI 能处理合并冲突吗？**
+A: AI 可以检测冲突、列出冲突文件、尝试提供合并建议，但最终解决仍建议人工确认。详见 [0.5 节](#05-遇到冲突怎么办)。
+
+**Q: 敏感操作如何防止误执行？**
+A: 本文档设计了完整的确认机制。所有破坏性操作都需要用户明确输入"确认"后才执行。
+
+**Q: 不同 AI IDE 的 System Prompt 格式不同怎么办？**
+A: 使用附录 B 的精简版，它可适配 Cursor (.cursorrules)、Copilot (.github/copilot-instructions.md)、CodeBuddy (.workbuddy/rules/) 等主流 IDE。
+
+**Q: 能处理子模块和 monorepo 吗？**
+A: 基础子模块操作已包含。复杂 monorepo 场景建议配合项目专属配置。
+
+**Q: 本地有个文件夹，怎么传到 GitHub / GitLab？**
+A: 先在平台网页创建**空仓库**（不要勾选 README），把 SSH 地址告诉 AI，说「帮我把当前项目传上去」即可。详见 [3.4](#34-本地项目关联-github-远程仓库) 和 [3.5](#35-本地项目关联-gitlab-远程仓库)。
+
+**Q: push 时报 Permission denied 怎么办？**
+A: 说明 SSH 没配好。告诉 AI「帮我配置 GitHub/GitLab SSH」，或查看 [3.6 常见问题](#36-初始化常见问题排查)。
+
+**Q: 必须用 SSH 吗？能用 HTTPS 吗？**
+A: 推荐 SSH（配一次永久有效）。SSH 不通时可用 HTTPS + Personal Access Token，见 [3.6](#36-初始化常见问题排查)。
+
+---
+
+> **维护建议：** 将此文件纳入项目版本控制，团队成员共同维护和优化触发词、工作流模板。

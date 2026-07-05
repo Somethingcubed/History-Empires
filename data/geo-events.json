@@ -1,0 +1,18 @@
+[
+  {"id": "issus", "kind": "battle", "name": "Battle of Issus", "year": -333, "lat": 36.15, "lon": 36.35, "color": "#e8b84d"},
+  {"id": "gaugamela", "kind": "battle", "name": "Battle of Gaugamela", "year": -331, "lat": 36.56, "lon": 43.45, "color": "#e8b84d"},
+  {"id": "zama", "kind": "battle", "name": "Battle of Zama", "year": -202, "lat": 36.52, "lon": 10.16, "color": "#c44c4c"},
+  {"id": "carrhae", "kind": "battle", "name": "Battle of Carrhae", "year": -53, "lat": 36.86, "lon": 39.03, "color": "#d4a743"},
+  {"id": "teutoburg", "kind": "battle", "name": "Teutoburg Forest", "year": 9, "lat": 52.4, "lon": 8.41, "color": "#9bb0d9"},
+  {"id": "adrianople", "kind": "battle", "name": "Adrianople", "year": 378, "lat": 41.67, "lon": 26.56, "color": "#7b68a3"},
+  {"id": "hattin", "kind": "battle", "name": "Hattin", "year": 1187, "lat": 32.79, "lon": 35.53, "color": "#6b9a6e"},
+  {"id": "orleans-siege", "kind": "battle", "name": "Siege of Orléans", "year": 1429, "lat": 47.9, "lon": 1.9, "color": "#5c6faf"},
+  {"id": "constantinople-1453", "kind": "battle", "name": "Fall of Constantinople", "year": 1453, "lat": 41.01, "lon": 28.98, "color": "#c9a962"},
+  {"id": "tenochtitlan", "kind": "battle", "name": "Fall of Tenochtitlan", "year": 1521, "lat": 19.43, "lon": -99.13, "color": "#d97b29"},
+  {"id": "leipzig", "kind": "battle", "name": "Battle of Leipzig", "year": 1813, "lat": 51.34, "lon": 12.41, "color": "#8899c4"},
+  {"id": "waterloo", "kind": "battle", "name": "Waterloo", "year": 1815, "lat": 50.68, "lon": 4.41, "color": "#6a7a9e"},
+  {"id": "gettysburg", "kind": "battle", "name": "Gettysburg", "year": 1863, "lat": 39.81, "lon": -77.23, "color": "#8fa6cf"},
+  {"id": "silk-corridor-peak", "kind": "route", "name": "Trans-Asian silk trade (illustrative arc)", "yearStart": 200, "yearEnd": 900, "latFrom": 34.3, "lonFrom": 108.9, "latTo": 36.2, "lonTo": 59.6, "color": "#c9a962"},
+  {"id": "mongol-relay", "kind": "route", "name": "Mongol relay / steppe corridor", "yearStart": 1220, "yearEnd": 1360, "latFrom": 47.9, "lonFrom": 106.9, "latTo": 42.3, "lonTo": 26.7, "color": "#8f6b2d"},
+  {"id": "atlantic-trade", "kind": "route", "name": "Transatlantic triangular trade (schematic)", "yearStart": 1650, "yearEnd": 1800, "latFrom": 14.7, "lonFrom": -17.4, "latTo": 19.4, "lonTo": -99.1, "color": "#6d7ab5"}
+]

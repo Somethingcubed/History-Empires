@@ -1,0 +1,140 @@
+{
+  "roman-empire": {
+    "title": "Legion discipline",
+    "tagline": "Shield lines soak punishment; Testudo tightens the ranks.",
+    "passive": { "infantryHpMult": 1.09 },
+    "active": {
+      "effect": "testudo",
+      "label": "Testudo pulse",
+      "cooldownMs": 34000,
+      "durationMs": 5600,
+      "damageTakenMult": 0.68
+    }
+  },
+  "carthaginian-empire": {
+    "title": "Silver fleets",
+    "tagline": "Trade tariffs swell quarries; emergency mercenary pay appears.",
+    "passive": { "minerYieldMult": 1.14, "passiveGoldMult": 1.07 },
+    "active": {
+      "effect": "subsidy",
+      "label": "Mercenary subsidy",
+      "cooldownMs": 46000,
+      "goldBonus": 82
+    }
+  },
+  "byzantine-empire": {
+    "title": "Theodosian walls",
+    "tagline": "Redoubts stand taller and bite farther; Greek fire roasts batteries.",
+    "passive": { "towerHpMult": 1.11, "towerRangeBonus": 10 },
+    "active": {
+      "effect": "greek_fire",
+      "label": "Greek fire barrage",
+      "cooldownMs": 40000,
+      "durationMs": 4800,
+      "towerDamageMult": 1.46
+    }
+  },
+  "ottoman-empire": {
+    "title": "Timar levies",
+    "tagline": "Quarry crews hustle; one timed levy drafts infantry.",
+    "passive": { "minerYieldMult": 1.13, "passiveGoldMult": 1.05 },
+    "active": {
+      "effect": "timariot_levy",
+      "label": "Timariot levy",
+      "cooldownMs": 52000
+    }
+  },
+  "british-empire": {
+    "title": "Thin red line",
+    "tagline": "Missile corps gain reach and bite; volleys flatten arcs.",
+    "passive": { "archerRangeBonus": 16, "archerDmgMult": 1.12 },
+    "active": {
+      "effect": "volley_fire",
+      "label": "Volley drill",
+      "cooldownMs": 39000,
+      "durationMs": 6800,
+      "archerDamageMult": 1.38
+    }
+  },
+  "french-empire-napoleonic": {
+    "title": "Grande batterie",
+    "tagline": "Forge tariffs shrink; massed fires ripple across every arm.",
+    "passive": { "forgeUpgradeCostMult": 0.88 },
+    "active": {
+      "effect": "grand_battery",
+      "label": "Battery massing",
+      "cooldownMs": 35000,
+      "durationMs": 5200,
+      "allOutgoingDamageMult": 1.2
+    }
+  },
+  "russian-empire": {
+    "title": "Winter camps",
+    "tagline": "Foot soldiers linger in the cold; once per clash engineers shore the walls.",
+    "passive": { "infantryHpMult": 1.06 },
+    "active": {
+      "effect": "trace_heal",
+      "label": "Engineer trace",
+      "cooldownMs": 44000,
+      "healBaseHp": 62
+    }
+  },
+  "soviet-union": {
+    "title": "Five-year sprint",
+    "tagline": "Quotas lift passive tribute; planned surges spike revenue.",
+    "passive": { "passiveGoldMult": 1.09, "minerYieldMult": 1.08 },
+    "active": {
+      "effect": "planned_surge",
+      "label": "Planned surge",
+      "cooldownMs": 50000,
+      "durationMs": 9200,
+      "economyMult": 2.15
+    }
+  },
+  "peoples-republic-of-china": {
+    "title": "Mobilization",
+    "tagline": "Mass infantry levies cost less; cadres issue complementary rifles.",
+    "passive": { "swordsmanCostMult": 0.9 },
+    "active": {
+      "effect": "peoples_mobilization",
+      "label": "People's levy",
+      "cooldownMs": 47000,
+      "freeSwordsmanCharges": 1
+    }
+  },
+  "mongol-empire": {
+    "title": "Ordo winds",
+    "tagline": "Horse-archers skim faster; the kurultai orders lightning probes.",
+    "passive": { "archerSpeedMult": 1.14, "infantrySpeedMult": 1.07 },
+    "active": {
+      "effect": "steppe_wind",
+      "label": "Steppe wind",
+      "cooldownMs": 41000,
+      "durationMs": 5600,
+      "speedMult": 1.29
+    }
+  },
+  "sumer": {
+    "title": "Temple estates",
+    "tagline": "Monuments discount batteries; ziggurats loom heavier.",
+    "passive": { "towerCostMult": 0.87, "towerHpMult": 1.09 },
+    "active": {
+      "effect": "monument_reprieve",
+      "label": "Temple stipend",
+      "cooldownMs": 53000,
+      "towerMarkdownGold": 78
+    }
+  },
+  "akkadian-empire": {
+    "title": "Sargon’s press",
+    "tagline": "Central relays sharpen every weapon arm for short bursts.",
+    "passive": { "combatDamageMult": 1.06 },
+    "active": {
+      "effect": "imperial_edict",
+      "label": "Royal edict",
+      "cooldownMs": 43000,
+      "durationMs": 5400,
+      "allOutgoingDamageMult": 1.26
+    }
+  }
+}

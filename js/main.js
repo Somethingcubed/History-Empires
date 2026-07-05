@@ -91,11 +91,63 @@
     redraw();
   }
 
+  function workingEmpires() {
+    return EmpireFilters.apply(DATA, SEL).filter(function (e) {
+      return !mutedRegions[e.region];
+    });
+  }
+
   function redraw() {
     EmpireTimeline.setMuted(mutedRegions);
     EmpireTimeline.setLayers(readLayers());
     EmpireTimeline.update(EmpireFilters.apply(DATA, SEL), DATA);
     updateFilterBanner();
+    if (window.EmpireMap && EmpireMap.refreshEmpires) {
+      EmpireMap.refreshEmpires(workingEmpires());
+    }
+  }
+
+  function wireViewTabs() {
+    var tt = document.getElementById("tab-timeline");
+    var tm = document.getElementById("tab-map");
+    var vt = document.getElementById("view-timeline");
+    var vm = document.getElementById("view-map");
+    if (!tt || !tm || !vt || !vm) return null;
+    function go(which) {
+      if (which === "map") {
+        vt.hidden = true;
+        vt.classList.add("is-hidden");
+        vm.hidden = false;
+        vm.classList.remove("is-hidden");
+        tt.classList.remove("is-active");
+        tt.setAttribute("aria-selected", "false");
+        tm.classList.add("is-active");
+        tm.setAttribute("aria-selected", "true");
+        document.body.classList.add("view-map-mode");
+        if (window.EmpireMap && EmpireMap.invalidate) {
+          window.setTimeout(function () {
+            EmpireMap.invalidate();
+          }, 150);
+        }
+      } else {
+        vm.hidden = true;
+        vm.classList.add("is-hidden");
+        vt.hidden = false;
+        vt.classList.remove("is-hidden");
+        tm.classList.remove("is-active");
+        tm.setAttribute("aria-selected", "false");
+        tt.classList.add("is-active");
+        tt.setAttribute("aria-selected", "true");
+        document.body.classList.remove("view-map-mode");
+      }
+    }
+    tt.onclick = function () {
+      go("timeline");
+    };
+    tm.onclick = function () {
+      go("map");
+    };
+    return go;
   }
 
   function wireFilters() {
@@ -137,11 +189,20 @@
   var rst = document.getElementById("btn-reset-filters");
   if (rst) rst.onclick = resetFiltersUi;
 
+  var switchMainView = wireViewTabs();
+
   EmpireTimeline.init({
     host: document.getElementById("timeline-chart"),
     overview: document.getElementById("timeline-overview"),
     onPick: function (empire) {
       EmpireDetailPanel.show(empire);
+      if (
+        document.body.classList.contains("view-map-mode") &&
+        window.EmpireMap &&
+        EmpireMap.setYear
+      ) {
+        EmpireMap.setYear(Math.round((empire.startYear + empire.endYear) / 2));
+      }
     },
     zoomButtons: {
       fit: document.getElementById("btn-zoom-fit"),
@@ -163,12 +224,38 @@
         throw new Error("data/empires.json must be a JSON array.");
       }
       DATA = rows;
+      return Promise.all([
+        fetch("data/kimi-ancient-civilizations.geojson").then(function (rk) {
+          return rk.ok ? rk.json() : { features: [] };
+        }),
+        fetch("data/kimi-empire-overrides.json").then(function (ro) {
+          return ro.ok ? ro.json() : {};
+        })
+      ]);
+    })
+    .then(function (pair) {
+      var gj = pair[0];
+      var ov = pair[1] || {};
+      if (window.EmpireKimiEnrichment && EmpireKimiEnrichment.attachToEmpires) {
+        EmpireKimiEnrichment.attachToEmpires(DATA, gj, ov);
+      }
       populateRegions("#filter-region");
       EmpireFilters.wireSelects(DATA);
       wireFilters();
       buildLegend("region-legend");
       EmpireTimeline.resize();
       hideLoadMsg();
+
+      if (window.L && window.EmpireMap && EmpireMap.init) {
+        EmpireMap.init("map-root");
+        EmpireMap.refreshEmpires(workingEmpires());
+        EmpireMap.loadEvents("data/geo-events.json");
+      }
+
+      var params = new URLSearchParams(window.location.search);
+      if (params.get("view") === "map" && typeof switchMainView === "function") {
+        switchMainView("map");
+      }
 
       EmpireMigration.maybeRun(function () {
         redraw();

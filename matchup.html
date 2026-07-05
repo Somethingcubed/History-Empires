@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>War Room — Empire History Timeline</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&amp;family=Inter:wght@400;500;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="subpage-body">
+    <div id="app-shell">
+      <header class="app-toolbar subpage-toolbar" aria-label="Matchup navigation">
+        <div class="app-brand">Empire History Timeline</div>
+        <nav class="site-nav" aria-label="Site pages">
+          <a href="index.html">Timeline</a>
+          <a href="index.html?view=map">World map</a>
+          <a href="quiz.html">Quiz</a>
+          <a href="matchup.html" class="is-current">War Room</a>
+          <a href="battle-sim.html">Battle sim</a>
+        </nav>
+      </header>
+      <main class="page-main">
+        <p id="matchup-load-msg" class="subpage-load-msg" role="status">Loading empire data…</p>
+        <section id="matchup-root" class="matchup-panel is-hidden" aria-label="Hypothetical battle" hidden>
+          <header class="matchup-intro">
+            <h1 class="matchup-title">War Room · hypotheticals</h1>
+            <p class="matchup-lede">
+              Time-machine mode <strong>on</strong>: drag any two empires out of history and slam them together. Everything below is a
+              <strong>toy general simulator</strong> — comic stats from our dataset plus your doctrine picks — not population counts or a real ORBAT.
+              Want stick troops and a lane economy? Try the <a href="battle-sim.html">Battle sim</a>.
+            </p>
+          </header>
+
+          <div class="matchup-war-grid">
+            <div class="matchup-side matchup-side-a">
+              <h2 class="matchup-side-title">Campaign A</h2>
+              <label class="matchup-field"
+                >Empire
+                <select id="matchup-a" aria-label="First empire"></select>
+              </label>
+              <label class="matchup-field"
+                >War council doctrine
+                <select id="doctrine-a" aria-label="Doctrine for side A"></select>
+              </label>
+              <div class="matchup-commander" aria-live="polite">
+                <div class="matchup-commander-row">
+                  <span class="matchup-commander-label">Commander codename</span>
+                  <button type="button" class="matchup-reroll-btn" id="reroll-commander-a" title="Shuffle epithet">Shuffle</button>
+                </div>
+                <p class="matchup-commander-name" id="commander-a-name">—</p>
+              </div>
+            </div>
+
+            <div class="matchup-side matchup-side-b">
+              <h2 class="matchup-side-title">Campaign B</h2>
+              <label class="matchup-field"
+                >Empire
+                <select id="matchup-b" aria-label="Second empire"></select>
+              </label>
+              <label class="matchup-field"
+                >War council doctrine
+                <select id="doctrine-b" aria-label="Doctrine for side B"></select>
+              </label>
+              <div class="matchup-commander" aria-live="polite">
+                <div class="matchup-commander-row">
+                  <span class="matchup-commander-label">Commander codename</span>
+                  <button type="button" class="matchup-reroll-btn" id="reroll-commander-b" title="Shuffle epithet">Shuffle</button>
+                </div>
+                <p class="matchup-commander-name" id="commander-b-name">—</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="matchup-global-controls">
+            <label class="matchup-field matchup-field-grow"
+              >Battle theater (everyone fights dirty here)
+              <select id="matchup-theater" aria-label="Battle theater"></select>
+            </label>
+            <fieldset class="matchup-tempo" aria-label="Battle tempo">
+              <legend>Battle tempo</legend>
+              <label class="matchup-radio"><input type="radio" name="matchup-tempo" value="blitz" checked /> Blitz — hotter dice</label>
+              <label class="matchup-radio"><input type="radio" name="matchup-tempo" value="grind" /> Grind — steadier lines</label>
+              <label class="matchup-radio"><input type="radio" name="matchup-tempo" value="psyop" /> Psy-op drum — morale swings</label>
+            </fieldset>
+          </div>
+
+          <section class="matchup-dice-arena" aria-label="Player dice">
+            <h2 class="matchup-dice-heading">Fate dice — yours to throw</h2>
+            <p class="matchup-dice-hint">
+              Roll both camp dice before launch. Each pip shifts the toy chaos needle — click the cubes or auto-roll if you are impatient.
+            </p>
+            <div class="matchup-dice-row">
+              <div class="matchup-dice-slot">
+                <span class="matchup-dice-caption">Campaign A</span>
+                <button type="button" class="dice-btn" id="dice-a" aria-label="Roll fate die for campaign A">
+                  <span class="dice-cube" aria-hidden="true"><span class="dice-face-num" id="dice-face-a">?</span></span>
+                  <span class="dice-btn-sub">tap</span>
+                </button>
+                <span class="dice-fate-readout" id="dice-readout-a" aria-live="polite"></span>
+              </div>
+              <div class="matchup-dice-slot matchup-wild-slot is-hidden" id="wild-die-slot" hidden>
+                <span class="matchup-dice-caption">Mercenary wild</span>
+                <button type="button" class="dice-btn dice-btn-wild" id="dice-wild" aria-label="Roll mercenary wild die" disabled>
+                  <span class="dice-cube" aria-hidden="true"><span class="dice-face-num" id="dice-wild-face">—</span></span>
+                  <span class="dice-btn-sub">both camps</span>
+                </button>
+                <span class="dice-fate-readout" id="dice-readout-wild" aria-live="polite"></span>
+              </div>
+              <div class="matchup-dice-slot">
+                <span class="matchup-dice-caption">Campaign B</span>
+                <button type="button" class="dice-btn" id="dice-b" aria-label="Roll fate die for campaign B">
+                  <span class="dice-cube" aria-hidden="true"><span class="dice-face-num" id="dice-face-b">?</span></span>
+                  <span class="dice-btn-sub">tap</span>
+                </button>
+                <span class="dice-fate-readout" id="dice-readout-b" aria-live="polite"></span>
+              </div>
+            </div>
+            <div class="matchup-dice-actions">
+              <button type="button" id="dice-auto" class="matchup-dice-auto-btn">Auto-roll fate dice</button>
+            </div>
+            <fieldset class="matchup-spicy">
+              <legend>Spicy rules</legend>
+              <label class="matchup-spicy-label"
+                ><input type="checkbox" id="spicy-bloodlust" /> <strong>Bloodlust</strong> — crank chaos multiplier (+22% after your rolls)</label
+              >
+              <label class="matchup-spicy-label"
+                ><input type="checkbox" id="spicy-mercenary" /> <strong>Mercenary wild die</strong> — third d6 rattles both totals</label
+              >
+            </fieldset>
+            <p id="matchup-dice-gate" class="matchup-dice-gate" role="status">Roll both camp dice to unlock launch.</p>
+          </section>
+
+          <button type="button" id="matchup-run" class="matchup-run-btn" disabled aria-disabled="true">Launch tabletop offensive</button>
+          <div id="matchup-result" class="matchup-result" aria-live="polite"></div>
+        </section>
+      </main>
+    </div>
+    <script src="js/matchup.js"></script>
+  </body>
+</html>

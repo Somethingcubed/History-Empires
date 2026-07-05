@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quiz — Empire History Timeline</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&amp;family=Inter:wght@400;500;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="subpage-body">
+    <div id="app-shell">
+      <header class="app-toolbar subpage-toolbar" aria-label="Quiz navigation">
+        <div class="app-brand">Empire History Timeline</div>
+        <nav class="site-nav" aria-label="Site pages">
+          <a href="index.html">Timeline</a>
+          <a href="index.html?view=map">World map</a>
+          <a href="quiz.html" class="is-current">Quiz</a>
+          <a href="matchup.html">War Room</a>
+          <a href="battle-sim.html">Battle sim</a>
+        </nav>
+      </header>
+      <main class="page-main quiz-page-main">
+        <p id="quiz-load-msg" class="subpage-load-msg" role="status">Loading empire data…</p>
+        <section id="challenge-root" class="challenge-panel challenge-panel-standalone" aria-label="History quiz"></section>
+      </main>
+    </div>
+    <script src="js/challenges.js"></script>
+    <script src="js/quiz-page.js"></script>
+  </body>
+</html>

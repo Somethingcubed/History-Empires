@@ -10,12 +10,24 @@
       href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&amp;family=Inter:wght@400;500;600&amp;display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
     <div id="app-shell">
       <header class="app-toolbar" aria-label="Application controls">
         <div class="app-brand">Empire History Timeline</div>
+        <nav class="site-nav" aria-label="Site pages">
+          <a href="index.html" class="is-current">Timeline</a>
+          <a href="index.html?view=map">World map</a>
+          <a href="quiz.html">Quiz</a>
+          <a href="matchup.html">War Room</a>
+          <a href="battle-sim.html">Battle sim</a>
+        </nav>
+        <div class="view-tabs" role="tablist" aria-label="Main view">
+          <button type="button" id="tab-timeline" class="view-tab is-active" role="tab" aria-selected="true">Timeline</button>
+          <button type="button" id="tab-map" class="view-tab" role="tab" aria-selected="false">World map</button>
+        </div>
         <label>Search<input id="filter-q" type="search" placeholder="Roman, Abbasid …" autocomplete="off" /></label>
         <label>Region<select id="filter-region"><option value="">All regions</option></select></label>
         <label>Era<select id="filter-era"><option value="">All eras</option></select></label>
@@ -23,33 +35,62 @@
         <button type="button" id="btn-reset-filters" title="Clear search and dropdown filters">Reset filters</button>
         <span id="filter-status" class="filter-status" role="status" aria-live="polite"></span>
         <div class="toolbar-spacer" aria-hidden="true"></div>
-        <button type="button" id="btn-zoom-fit">Fit All</button>
-        <button type="button" id="btn-zoom-ancient">Ancient</button>
-        <button type="button" id="btn-zoom-medieval">Medieval</button>
-        <button type="button" id="btn-zoom-modern">Modern</button>
-        <fieldset class="layer-toggles" aria-label="Layer visibility">
-          <legend>Layers</legend>
-          <label><input type="checkbox" id="layer-bars" checked />Bars</label>
-          <label><input type="checkbox" id="layer-regions" checked />Bands</label>
-          <label><input type="checkbox" id="layer-regions-labels" checked />Region tags</label>
-          <label><input type="checkbox" id="layer-grid" checked />Grid</label>
-          <label><input type="checkbox" id="layer-labels" checked />Names</label>
-        </fieldset>
+        <div id="timeline-zoom-tools" class="timeline-only-tools">
+          <button type="button" id="btn-zoom-fit">Fit All</button>
+          <button type="button" id="btn-zoom-ancient">Ancient</button>
+          <button type="button" id="btn-zoom-medieval">Medieval</button>
+          <button type="button" id="btn-zoom-modern">Modern</button>
+          <fieldset class="layer-toggles" aria-label="Layer visibility">
+            <legend>Layers</legend>
+            <label><input type="checkbox" id="layer-bars" checked />Bars</label>
+            <label><input type="checkbox" id="layer-regions" checked />Bands</label>
+            <label><input type="checkbox" id="layer-regions-labels" checked />Region tags</label>
+            <label><input type="checkbox" id="layer-grid" checked />Grid</label>
+            <label><input type="checkbox" id="layer-labels" checked />Names</label>
+          </fieldset>
+        </div>
       </header>
       <main class="main-stage">
-        <div class="timeline-column">
-          <div id="timeline-wrap">
-            <p id="data-load-msg" class="data-load-msg" role="status">Loading empire data…</p>
-            <div
-              id="timeline-chart"
-              aria-label="Interactive timeline: drag horizontally to pan, scroll or pinch to zoom"
-            ></div>
-            <div id="timeline-overview" aria-label="Whole-period overview"></div>
+        <div id="view-timeline" class="main-view">
+          <div class="timeline-column">
+            <div id="timeline-wrap">
+              <p id="data-load-msg" class="data-load-msg" role="status">Loading empire data…</p>
+              <div
+                id="timeline-chart"
+                aria-label="Interactive timeline: drag horizontally to pan, scroll or pinch to zoom"
+              ></div>
+              <div id="timeline-overview" aria-label="Whole-period overview"></div>
+            </div>
+            <section class="region-legend-container" aria-label="Region legend">
+              <p class="sr-screen">Mute or highlight regions:</p>
+              <div id="region-legend" class="region-legend"></div>
+            </section>
           </div>
-          <section class="region-legend-container" aria-label="Region legend">
-            <p class="sr-screen">Mute or highlight regions:</p>
-            <div id="region-legend" class="region-legend"></div>
-          </section>
+        </div>
+        <div id="view-map" class="main-view is-hidden" hidden>
+          <div class="map-controls">
+            <label class="map-year-label">
+              <span class="map-year-title">Year</span>
+              <input id="map-year" type="range" min="-4000" max="2026" value="1000" />
+              <output id="map-year-out" for="map-year">1000 CE</output>
+            </label>
+            <fieldset class="map-layers">
+              <label><input type="checkbox" id="map-layer-historical" /> Broad world snapshot</label>
+              <label><input type="checkbox" id="map-layer-exact" checked /> Continuous visual boundaries</label>
+              <label><input type="checkbox" id="map-layer-battles" checked /> Battles</label>
+              <label><input type="checkbox" id="map-layer-routes" checked /> Corridors</label>
+              <label><input type="checkbox" id="map-layer-ancient-civ" /> Ancient cultures (Kimi GeoJSON)</label>
+            </fieldset>
+            <p id="map-snapshot-label" class="map-snapshot-label" role="status"></p>
+            <p id="map-boundary-status" class="map-snapshot-label" role="status"></p>
+            <p class="map-disclaimer">
+              <strong>Basemap:</strong> OpenStreetMap or Esri satellite (layer control, top-right). <strong>Territories:</strong> nearest
+              historical snapshot &le; selected year (see label). Colours follow <code>SUBJECTO</code>/<code>NAME</code> from the
+              dataset. <strong>Continuous visual boundaries</strong> prefer real coordinate snapshots from Timelory, then Cliopatria,
+              historical-basemap anchors, AtlasPI, and local prototype boundaries. These are casual visual references, not legal or academic border claims.
+            </p>
+          </div>
+          <div id="map-root" aria-label="World map"></div>
         </div>
         <aside class="detail-panel-wrap" id="detail-root" role="region" aria-label="Empire details" data-open="false"></aside>
       </main>
@@ -64,10 +105,14 @@
     </div>
 
     <script src="vendor/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/geo-base.js"></script>
     <script src="js/timeline.js"></script>
     <script src="js/detail-panel.js"></script>
     <script src="js/filters.js"></script>
     <script src="js/migration.js"></script>
+    <script src="js/map-view.js"></script>
+    <script src="js/kimi-enrichment.js"></script>
     <script src="js/main.js"></script>
   </body>
 </html>

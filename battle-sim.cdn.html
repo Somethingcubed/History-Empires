@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Battle Sim — Empire History Timeline</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&amp;family=Inter:wght@400;500;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="subpage-body">
+    <div id="app-shell">
+      <header class="app-toolbar subpage-toolbar" aria-label="Battle sim navigation">
+        <div class="app-brand">Empire History Timeline</div>
+        <nav class="site-nav" aria-label="Site pages">
+          <a href="index.html">Timeline</a>
+          <a href="index.html?view=map">World map</a>
+          <a href="quiz.html">Quiz</a>
+          <a href="matchup.html">War Room</a>
+          <a href="battle-sim.cdn.html" class="is-current">Battle sim</a>
+        </nav>
+      </header>
+      <main class="page-main battle-sim-main">
+        <section class="battle-sim-panel" aria-label="Historical battle simulation sketch">
+          <header class="battle-sim-intro">
+            <h1 class="battle-sim-title">Stick imperial rumble</h1>
+            <p class="battle-sim-lede">
+              The battlefield runs on <strong>Phaser 3</strong> with the <strong>Canvas</strong> renderer (CPU 2D draw path into a dynamic bitmap each frame). You still get <strong>hit‑stop</strong>, punch‑zoom, shock rings, trails, and doctrine perks.
+              Capitals stay chunky monuments for contrast. Pair any two states from the dataset — passives and signature abilities still define how you actually play. Restart reapplies your matchup.
+            </p>
+          </header>
+
+          <div class="battle-sim-matchup">
+            <label class="battle-sim-field battle-sim-field-grow"
+              >Your capital
+              <select id="sim-empire-you" aria-label="Player empire"></select>
+            </label>
+            <label class="battle-sim-field battle-sim-field-grow"
+              >Rival capital
+              <select id="sim-empire-rival" aria-label="Rival empire"></select>
+            </label>
+            <div class="battle-sim-matchup-actions">
+              <button type="button" class="battle-sim-btn-secondary" id="sim-suggest-rival">Suggest historical foil</button>
+            </div>
+            <p id="sim-matchup-readout" class="battle-sim-readout" aria-live="polite"></p>
+          </div>
+
+          <section class="battle-sim-perks" aria-label="Your empire doctrine">
+            <div class="battle-sim-perk-text">
+              <h2 class="battle-sim-perk-title" id="sim-perk-title">Doctrine</h2>
+              <p class="battle-sim-perk-tagline" id="sim-perk-tagline"></p>
+            </div>
+            <div class="battle-sim-perk-actions">
+              <button type="button" class="battle-sim-ability" id="sim-empire-ability" disabled>No signature doctrine</button>
+              <p class="battle-sim-ability-cd" id="sim-ability-cd" aria-live="polite"></p>
+            </div>
+          </section>
+
+          <div class="battle-sim-hud">
+            <div class="battle-sim-resources">
+              <span class="battle-sim-res battle-sim-res-gold"
+                ><strong id="sim-gold">0</strong> <span class="battle-sim-res-label">gold</span></span
+              >
+              <span class="battle-sim-res battle-sim-res-passive"
+                ><span id="sim-income">+0</span> <span class="battle-sim-res-label">/ sec</span></span
+              >
+            </div>
+            <div class="battle-sim-buffs" id="sim-buffs" aria-live="polite"></div>
+            <div class="battle-sim-meta">
+              <label class="battle-sim-field"
+                >Red empire aggression
+                <select id="sim-difficulty" aria-label="Enemy aggression">
+                  <option value="1">Calm</option>
+                  <option value="1.35" selected>Normal</option>
+                  <option value="1.75">Relentless</option>
+                </select>
+              </label>
+              <button type="button" class="battle-sim-btn-secondary" id="sim-pause">Pause</button>
+              <button type="button" class="battle-sim-btn-secondary" id="sim-restart">Restart</button>
+            </div>
+          </div>
+
+          <div class="battle-sim-canvas-wrap">
+            <div id="battle-phaser-root" class="battle-phaser-root" aria-label="Battlefield"></div>
+            <p id="sim-overlay-msg" class="battle-sim-overlay-msg is-hidden" role="status" hidden></p>
+          </div>
+
+          <div class="battle-sim-shop">
+            <p class="battle-sim-shop-hint">
+              Spend tribute on levies and earthworks. Quarry crews bankroll everything — still an abstraction, not period wages.
+            </p>
+            <div class="battle-sim-shop-row">
+              <button type="button" class="battle-sim-buy" data-buy="miner" title="Labour at your coloured quarry">
+                Quarry crew <span class="battle-sim-cost" data-cost-for="miner"></span>
+              </button>
+              <button type="button" class="battle-sim-buy" data-buy="swordsman" title="Heavy armoured line">
+                Shield infantry <span class="battle-sim-cost" data-cost-for="swordsman"></span>
+              </button>
+              <button type="button" class="battle-sim-buy" data-buy="archer" title="Missile troops">
+                Missile corps <span class="battle-sim-cost" data-cost-for="archer"></span>
+              </button>
+              <button type="button" class="battle-sim-buy" data-buy="tower" title="Battery redoubt — fires slowly">
+                Battery redoubt <span class="battle-sim-cost" data-cost-for="tower"></span>
+              </button>
+              <button type="button" class="battle-sim-buy battle-sim-buy-upgrade" id="sim-upgrade-all" title="Buff all your units a little">
+                Forge upgrade <span id="sim-upgrade-cost-label"></span>
+              </button>
+            </div>
+          </div>
+
+          <footer class="battle-sim-footnote">
+            <p>
+              Tip: march stick levies through <strong class="battle-sim-accent">tactics orbs</strong> — gold bursts or a battle standard that sharpens volleys for a few seconds.
+              Stick redoubts crew the parapet and punch lanes with neon bolts.
+            </p>
+          </footer>
+        </section>
+      </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+    <script src="js/battle-sim.js"></script>
+  </body>
+</html>
